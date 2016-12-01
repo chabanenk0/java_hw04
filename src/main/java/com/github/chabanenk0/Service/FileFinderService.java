@@ -4,6 +4,7 @@ import com.github.chabanenk0.Entity.FileInformation;
 import com.github.chabanenk0.Exception.WrongPathException;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -14,16 +15,25 @@ public class FileFinderService
 {
     private int maxRecursion;
 
-    public FileFinderService(int maxRecursion)
-    {
-        this.maxRecursion = maxRecursion;
-    }
+    private FileFilter fileFilter;
 
     public FileFinderService()
     {
         this.maxRecursion = 10;
+        this.fileFilter = new ExtensionFileFilter();
     }
 
+    public FileFinderService(int maxRecursion)
+    {
+        this.maxRecursion = maxRecursion;
+        this.fileFilter = new ExtensionFileFilter();
+    }
+
+    public FileFinderService(int maxRecursion, FileFilter fileFilter)
+    {
+        this.maxRecursion = maxRecursion;
+        this.fileFilter = fileFilter;
+    }
 
     public int getMaxRecursion() {
         return maxRecursion;
@@ -33,7 +43,7 @@ public class FileFinderService
         this.maxRecursion = maxRecursion;
     }
 
-    public Collection<FileInformation> findFilesByType(String directory, String extension) throws WrongPathException {
+    public Collection<FileInformation> findFilesByType(String directory) throws WrongPathException {
         Collection <FileInformation> results = new LinkedList<FileInformation>();
 
         File directoryObject = new File(directory);
@@ -41,12 +51,12 @@ public class FileFinderService
             throw new WrongPathException("Wrong path! " + directory + " should be a directory.");
         }
 
-        this.recursivelyFindFiles(directoryObject, extension, results, 0);
+        this.recursivelyFindFiles(directoryObject, results, 0);
 
         return results;
     }
 
-    private void recursivelyFindFiles(File directoryObject, String extension, Collection<FileInformation> results, int recursionNumber)
+    private void recursivelyFindFiles(File directoryObject, Collection<FileInformation> results, int recursionNumber)
     {
         if (recursionNumber > this.maxRecursion) {
             return;
@@ -59,30 +69,15 @@ public class FileFinderService
 
             String fullFileName = directoryObject.getAbsoluteFile() + "/" +fileName;
 
-            FileInformation fileInformation = new FileInformation(fullFileName, extension);
+            FileInformation fileInformation = new FileInformation(fullFileName);
             File fileObject = new File(fullFileName);
             if (null != fileObject && fileObject.isDirectory()) {
-                recursivelyFindFiles(fileObject, extension, results, recursionNumber + 1);
+                recursivelyFindFiles(fileObject, results, recursionNumber + 1);
             } else {
-                // fix bug if the directory has the appropriate "extension"
-                if (this.checkFileExtension(fileName, extension)) {
+                if (!fileObject.isDirectory() && this.fileFilter.accept(fileObject)) {
                     results.add(fileInformation);
                 }
             }
         }
-    }
-
-    private boolean checkFileExtension(String fileName, String properExtension)
-    {
-        String extension = "";
-
-        int i = fileName.lastIndexOf('.');
-        int p = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
-
-        if (i > p) {
-            extension = fileName.substring(i+1);
-        }
-
-        return extension.equals(properExtension);
     }
 }

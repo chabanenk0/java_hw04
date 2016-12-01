@@ -19,16 +19,21 @@ public class ArchiveBuilderService
 
     public ArchiveBuilderService()
     {
-        files = new LinkedList<FileInformation>();
+        this.files = new LinkedList<FileInformation>();
     }
     public void addFileItemToArchive(FileInformation file)
     {
-        files.add(file);
+        this.files.add(file);
     }
 
     public void addFiles(Collection<FileInformation> collection)
     {
-        files.addAll(collection);
+        this.files.addAll(collection);
+    }
+
+    public void clearFiles()
+    {
+        this.files.clear();
     }
 
     public void pack(String archiveFileName) throws IOException {

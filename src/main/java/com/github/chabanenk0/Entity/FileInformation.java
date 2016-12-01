@@ -13,4 +13,10 @@ public class FileInformation
         this.path = path;
         this.extension = extension;
     }
+
+    public FileInformation(String path)
+    {
+        this.path = path;
+        this.extension = ""; //@todo implement extension parsing
+    }
 }
